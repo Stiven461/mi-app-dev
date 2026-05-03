@@ -1,14 +1,15 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const db = new sqlite3.Database(path.join(__dirname, 'todos.db'));
+const db = new sqlite3.Database(path.join(__dirname, 'contacts.db'));
 
-// Crear tabla de tareas
+// Crear tabla de contactos
 db.run(`
-  CREATE TABLE IF NOT EXISTS tasks (
+  CREATE TABLE IF NOT EXISTS contacts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    completed INTEGER DEFAULT 0,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
