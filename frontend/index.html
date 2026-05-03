@@ -1,11 +1,35 @@
-"<!DOCTYPE html>" 
-"<html>" 
-"<head>" 
-"    <title>Mi App Fullstack</title>" 
-"</head>" 
-"<body>" 
-"    <h1>Bienvenido a Mi App</h1>" 
-"    <div id='app'></div>" 
-"    <script src='app.js'></script>" 
-"</body>" 
-"</html>" 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do App | Gestión de Tareas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Lista de Tareas</h1>
+
+        <div class="add-task">
+            <input type="text" id="taskInput" placeholder="Nueva tarea..." maxlength="100">
+            <button id="addBtn">➕ Agregar</button>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Todas</button>
+            <button class="filter-btn" data-filter="pending">Pendientes</button>
+            <button class="filter-btn" data-filter="completed">Completadas</button>
+        </div>
+
+        <ul id="taskList" class="task-list"></ul>
+
+        <div class="stats">
+            <span id="totalTasks">0</span> tareas totales |
+            <span id="pendingTasks">0</span> pendientes |
+            <span id="completedTasks">0</span> completadas
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
