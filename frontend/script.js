@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/tasks';
+const API_URL = 'http://localhost:3001/api/tasks';
 
 let currentFilter = 'all';
 let tasks = [];

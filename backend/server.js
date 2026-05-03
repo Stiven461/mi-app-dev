@@ -3,10 +3,15 @@ const cors = require('cors');
 const db = require('./database');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Ruta de bienvenida (NUEVA)---
+app.get('/', (req, res) => {
+  res.json({ message: 'API de To-Do App funcionando correctamente' });
+});
 
 // Obtener todas las tareas
 app.get('/api/tasks', (req, res) => {
