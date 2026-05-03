@@ -1,0 +1,7 @@
+"// App principal" 
+"console.log('Frontend iniciado');" 
+"fetch('http://localhost:3000/')" 
+"    .then(res => res.json())" 
+"    .then(data => {" 
+"        document.getElementById('app').innerHTML = data.message;" 
+"    });" 
