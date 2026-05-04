@@ -1,119 +1,142 @@
-const API_URL = 'http://localhost:3001/api/tasks';
+const API_URL = 'http://localhost:3001/api/contacts';
 
-let currentFilter = 'all';
-let tasks = [];
+let contacts = [];
+let searchQuery = '';
 
-// Cargar tareas al iniciar
 document.addEventListener('DOMContentLoaded', () => {
-    loadTasks();
-    document.getElementById('addBtn').addEventListener('click', addTask);
-    document.getElementById('taskInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addTask();
+    loadContacts();
+    document.getElementById('saveBtn').addEventListener('click', saveContact);
+    document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderContacts();
     });
-
-    // Filtros
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter;
-            renderTasks();
-        });
+    document.getElementById('clearSearchBtn').addEventListener('click', () => {
+        document.getElementById('searchInput').value = '';
+        searchQuery = '';
+        renderContacts();
     });
 });
 
-async function loadTasks() {
+async function loadContacts() {
     try {
         const response = await fetch(API_URL);
-        tasks = await response.json();
-        renderTasks();
+        contacts = await response.json();
+        renderContacts();
         updateStats();
     } catch (error) {
-        console.error('Error loading tasks:', error);
+        console.error('Error loading contacts:', error);
     }
 }
 
-async function addTask() {
-    const input = document.getElementById('taskInput');
-    const title = input.value.trim();
+async function saveContact() {
+    const id = document.getElementById('editId').value;
+    const name = document.getElementById('contactName').value.trim();
+    const phone = document.getElementById('contactPhone').value.trim();
+    const email = document.getElementById('contactEmail').value.trim();
 
-    if (!title) return;
-
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title })
-        });
-
-        const newTask = await response.json();
-        tasks.unshift(newTask);
-        renderTasks();
-        updateStats();
-        input.value = '';
-    } catch (error) {
-        console.error('Error adding task:', error);
-    }
-}
-
-async function toggleTask(id, completed) {
-    try {
-        await fetch(`${API_URL}/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ completed: completed ? 0 : 1 })
-        });
-
-        const task = tasks.find(t => t.id === id);
-        if (task) task.completed = task.completed ? 0 : 1;
-        renderTasks();
-        updateStats();
-    } catch (error) {
-        console.error('Error toggling task:', error);
-    }
-}
-
-async function deleteTask(id) {
-    try {
-        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-        tasks = tasks.filter(t => t.id !== id);
-        renderTasks();
-        updateStats();
-    } catch (error) {
-        console.error('Error deleting task:', error);
-    }
-}
-
-function renderTasks() {
-    const taskList = document.getElementById('taskList');
-    let filteredTasks = tasks;
-
-    if (currentFilter === 'pending') {
-        filteredTasks = tasks.filter(t => t.completed === 0);
-    } else if (currentFilter === 'completed') {
-        filteredTasks = tasks.filter(t => t.completed === 1);
-    }
-
-    if (filteredTasks.length === 0) {
-        taskList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">No hay tareas</div>';
+    if (!name || !phone) {
+        alert('Nombre y teléfono son obligatorios');
         return;
     }
 
-    taskList.innerHTML = filteredTasks.map(task => `
-        <li class="task-item">
-            <input type="checkbox" class="task-checkbox"
-                   ${task.completed ? 'checked' : ''}
-                   onchange="toggleTask(${task.id}, ${task.completed})">
-            <span class="task-title ${task.completed ? 'completed' : ''}">${escapeHtml(task.title)}</span>
-            <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️</button>
+    const contact = { name, phone, email: email || null };
+
+    try {
+        let response;
+        if (id) {
+            response = await fetch(`${API_URL}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(contact)
+            });
+        } else {
+            response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(contact)
+            });
+        }
+
+        if (response.ok) {
+            clearForm();
+            loadContacts();
+        }
+    } catch (error) {
+        console.error('Error saving contact:', error);
+    }
+}
+
+async function editContact(id) {
+    const contact = contacts.find(c => c.id === id);
+    if (!contact) return;
+
+    document.getElementById('editId').value = contact.id;
+    document.getElementById('contactName').value = contact.name;
+    document.getElementById('contactPhone').value = contact.phone;
+    document.getElementById('contactEmail').value = contact.email || '';
+    document.getElementById('saveBtn').textContent = '✏️ Actualizar Contacto';
+    document.getElementById('cancelBtn').style.display = 'block';
+}
+
+async function deleteContact(id) {
+    if (!confirm('¿Eliminar este contacto?')) return;
+
+    try {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        loadContacts();
+    } catch (error) {
+        console.error('Error deleting contact:', error);
+    }
+}
+
+function cancelEdit() {
+    clearForm();
+}
+
+function clearForm() {
+    document.getElementById('editId').value = '';
+    document.getElementById('contactName').value = '';
+    document.getElementById('contactPhone').value = '';
+    document.getElementById('contactEmail').value = '';
+    document.getElementById('saveBtn').textContent = '💾 Guardar Contacto';
+    document.getElementById('cancelBtn').style.display = 'none';
+}
+
+function renderContacts() {
+    const contactsList = document.getElementById('contactsList');
+    let filteredContacts = contacts;
+
+    if (searchQuery) {
+        filteredContacts = contacts.filter(c =>
+            c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.phone.includes(searchQuery) ||
+            (c.email && c.email.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+    }
+
+    if (filteredContacts.length === 0) {
+        contactsList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">No hay contactos</div>';
+        return;
+    }
+
+    contactsList.innerHTML = filteredContacts.map(contact => `
+        <li class="contact-item">
+            <div class="contact-info">
+                <div class="contact-name">${escapeHtml(contact.name)}</div>
+                <div class="contact-phone">📞 ${escapeHtml(contact.phone)}</div>
+                ${contact.email ? `<div class="contact-email">✉️ ${escapeHtml(contact.email)}</div>` : ''}
+            </div>
+            <div class="contact-actions">
+                <button class="edit-btn" onclick="editContact(${contact.id})">✏️ Editar</button>
+                <button class="delete-btn" onclick="deleteContact(${contact.id})">🗑️ Eliminar</button>
+            </div>
         </li>
     `).join('');
 }
 
 function updateStats() {
-    document.getElementById('totalTasks').textContent = tasks.length;
-    document.getElementById('pendingTasks').textContent = tasks.filter(t => t.completed === 0).length;
-    document.getElementById('completedTasks').textContent = tasks.filter(t => t.completed === 1).length;
+    document.getElementById('totalContacts').textContent = contacts.length;
 }
 
 function escapeHtml(text) {
@@ -121,3 +144,6 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+window.editContact = editContact;
+window.deleteContact = deleteContact;
