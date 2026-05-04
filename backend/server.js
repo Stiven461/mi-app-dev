@@ -8,51 +8,73 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-// Ruta de bienvenida (NUEVA)---
 app.get('/', (req, res) => {
-  res.json({ message: 'API de To-Do App funcionando correctamente' });
+  res.json({ message: 'API de Agenda de Contactos funcionando' });
 });
 
-// Obtener todas las tareas
-app.get('/api/tasks', (req, res) => {
-  db.all('SELECT * FROM tasks ORDER BY created_at DESC', (err, rows) => {
+// Obtener todos los contactos
+app.get('/api/contacts', (req, res) => {
+  db.all('SELECT * FROM contacts ORDER BY name ASC', (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-// Crear nueva tarea
-app.post('/api/tasks', (req, res) => {
-  const { title } = req.body;
-  if (!title) return res.status(400).json({ error: 'Title is required' });
-
-  db.run('INSERT INTO tasks (title) VALUES (?)', [title], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ id: this.lastID, title, completed: 0 });
-  });
+// Buscar contacto
+app.get('/api/contacts/search', (req, res) => {
+  const { q } = req.query;
+  db.all(
+    'SELECT * FROM contacts WHERE name LIKE ? OR phone LIKE ? OR email LIKE ? ORDER BY name ASC',
+    [`%${q}%`, `%${q}%`, `%${q}%`],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
 });
 
-// Actualizar tarea (completar)
-app.put('/api/tasks/:id', (req, res) => {
-  const { id } = req.params;
-  const { completed } = req.body;
+// Crear contacto
+app.post('/api/contacts', (req, res) => {
+  const { name, phone, email } = req.body;
+  if (!name || !phone) {
+    return res.status(400).json({ error: 'Name and phone are required' });
+  }
 
-  db.run('UPDATE tasks SET completed = ? WHERE id = ?', [completed, id], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'Task updated' });
-  });
+  db.run(
+    'INSERT INTO contacts (name, phone, email) VALUES (?, ?, ?)',
+    [name, phone, email || null],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ id: this.lastID, name, phone, email });
+    }
+  );
 });
 
-// Eliminar tarea
-app.delete('/api/tasks/:id', (req, res) => {
+// Actualizar contacto
+app.put('/api/contacts/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, phone, email } = req.body;
+
+  db.run(
+    'UPDATE contacts SET name = ?, phone = ?, email = ? WHERE id = ?',
+    [name, phone, email, id],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'Contact updated' });
+    }
+  );
+});
+
+// Eliminar contacto
+app.delete('/api/contacts/:id', (req, res) => {
   const { id } = req.params;
 
-  db.run('DELETE FROM tasks WHERE id = ?', [id], function(err) {
+  db.run('DELETE FROM contacts WHERE id = ?', [id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'Task deleted' });
+    res.json({ message: 'Contact deleted' });
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📒 Agenda API running on http://localhost:${PORT}`);
 });
