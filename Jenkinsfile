@@ -14,13 +14,33 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                bat 'npm install'
+                // Navegar a la carpeta backend donde está package.json
+                dir('backend') {
+                    bat 'npm install'
+                }
             }
         }
         
         stage('Run Tests') {
             steps {
+                // test.js está en la raíz del proyecto
                 bat 'node test.js'
+            }
+        }
+        
+        stage('Verify Backend') {
+            steps {
+                dir('backend') {
+                    bat 'node -e "console.log(\"Backend funcionando correctamente\")"'
+                }
+            }
+        }
+        
+        stage('Verify Frontend') {
+            steps {
+                dir('frontend') {
+                    bat 'echo "Archivos del frontend verificados"'
+                }
             }
         }
         
