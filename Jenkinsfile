@@ -29,7 +29,6 @@ pipeline {
         stage('Verify Backend') {
             steps {
                 dir('backend') {
-                    // Esta línea es la CORRECTA - fíjate en las comillas
                     bat 'node -e "console.log(\"Backend funcionando correctamente\")"'
                 }
             }
