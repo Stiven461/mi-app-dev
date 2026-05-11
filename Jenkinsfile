@@ -14,7 +14,6 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                // Navegar a la carpeta backend donde está package.json
                 dir('backend') {
                     bat 'npm install'
                 }
@@ -23,7 +22,6 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                // test.js está en la raíz del proyecto
                 bat 'node test.js'
             }
         }
