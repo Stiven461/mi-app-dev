@@ -2,14 +2,13 @@ pipeline {
     agent any
     
     tools {
-        nodejs 'NodeJS-18'  // Configura esto en Global Tool Configuration
+        nodejs 'NodeJS-18'
     }
     
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/tu-usuario/tu-repo.git'
-                // O si es local: checkout scm
+                git branch: 'main', url: 'https://github.com/Stiven461/mi-app-dev.git'
             }
         }
         
@@ -19,43 +18,22 @@ pipeline {
             }
         }
         
-        stage('Run Backend Tests') {
+        stage('Run Tests') {
             steps {
-                bat 'node -e "console.log(\"Backend OK\")"'
-                // Aquí podrías correr pruebas con Jest o Mocha
+                bat 'node test.js'
             }
         }
         
-        stage('Verify Frontend') {
+        stage('Build') {
             steps {
-                bat 'node -e "console.log(\"Frontend files OK\")"'
-            }
-        }
-        
-        stage('Package Application') {
-            steps {
-                bat 'mkdir dist'
-                bat 'copy *.js dist\\'
-                bat 'copy *.json dist\\'
-                bat 'copy *.html dist\\'
-                bat 'copy *.css dist\\'
-            }
-        }
-        
-        stage('Deploy to Local') {
-            steps {
-                bat 'start /B node server.js'
-                echo 'Aplicación desplegada en http://localhost:3001'
+                echo 'Pipeline completado exitosamente'
             }
         }
     }
     
     post {
-        always {
-            echo 'Pipeline completado'
-        }
         success {
-            echo '✅ Construcción exitosa'
+            echo '✅ Pipeline exitoso!'
         }
         failure {
             echo '❌ Construcción fallida'
