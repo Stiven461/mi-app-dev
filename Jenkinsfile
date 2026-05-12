@@ -20,41 +20,34 @@ pipeline {
             }
         }
         
-        stage('Run Tests') {
-            steps {
-                bat 'node test.js'
-            }
-        }
-        
-        stage('Verify Backend') {
+        stage('Start Backend') {
             steps {
                 dir('backend') {
-                    bat 'node -e "console.log(\"Backend funcionando correctamente\")"'
+                    bat 'start /B node server.js'
+                    bat 'timeout /t 3 /nobreak > nul'
                 }
             }
         }
         
-        stage('Verify Frontend') {
+        stage('Test CRUD Completo') {
             steps {
-                dir('frontend') {
-                    bat 'echo "Archivos del frontend verificados"'
-                }
+                bat 'node test-completo.js'
             }
         }
         
         stage('Build') {
             steps {
-                echo 'Pipeline completado exitosamente'
+                echo '✅ Pipeline completado exitosamente! La app funciona!'
             }
         }
     }
     
     post {
         success {
-            echo '✅ Pipeline exitoso!'
+            echo '🎉 ¡Aplicación verificada y funcionando!'
         }
         failure {
-            echo '❌ Construcción fallida'
+            echo '❌ La aplicación tiene errores. Revisa los logs.'
         }
     }
 }
