@@ -24,7 +24,7 @@ pipeline {
             steps {
                 dir('backend') {
                     bat 'start /B node server.js'
-                    bat 'timeout /t 3 /nobreak > nul'
+                    bat 'ping -n 3 127.0.0.1 > nul'
                 }
             }
         }
@@ -37,7 +37,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                echo '✅ Pipeline completado exitosamente! La app funciona!'
+                echo '✅ Pipeline completado exitosamente!'
             }
         }
     }
@@ -47,7 +47,7 @@ pipeline {
             echo '🎉 ¡Aplicación verificada y funcionando!'
         }
         failure {
-            echo '❌ La aplicación tiene errores. Revisa los logs.'
+            echo '❌ La aplicación tiene errores.'
         }
     }
 }
